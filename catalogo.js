@@ -285,95 +285,139 @@ function mostrarResumen() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//                    DEMOSTRACIÓN DEL CRUD
+//                    MENÚ INTERACTIVO DEL CRUD
 // ════════════════════════════════════════════════════════════════
 
-console.clear();
+const readline = require('readline');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
-console.log(`
+function pausa() {
+  rl.question(`\n${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => {
+    mostrarMenuCRUD();
+  });
+}
+
+function mostrarMenuCRUD() {
+  console.clear();
+  console.log(`
 ${colores.bright}${colores.cyan}
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
 ║        ☕ CRUD - GESTIÓN DE CAFETERÍA ☕                 ║
 ║                                                           ║
-║     Create, Read, Update, Delete de Productos            ║
+║     Menú Interactivo de Administración                   ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
 ${colores.reset}`);
 
-// ─────────────────────────────────────────────────────────────────
-// 1. READ - LEER PRODUCTOS
-// ─────────────────────────────────────────────────────────────────
+  console.log(`  ${colores.cyan}1${colores.reset} - Leer todos los productos (READ)`);
+  console.log(`  ${colores.cyan}2${colores.reset} - Leer producto por ID (READ)`);
+  console.log(`  ${colores.cyan}3${colores.reset} - Crear nuevo producto (CREATE)`);
+  console.log(`  ${colores.cyan}4${colores.reset} - Actualizar producto (UPDATE)`);
+  console.log(`  ${colores.cyan}5${colores.reset} - Eliminar producto (DELETE)`);
+  console.log(`  ${colores.cyan}6${colores.reset} - Mostrar resumen del catálogo`);
+  console.log(`  ${colores.cyan}7${colores.reset} - Productos con stock bajo`);
+  console.log(`  ${colores.cyan}0${colores.reset} - Salir\n`);
 
-leerTodosProductos();
+  rl.question(`${colores.cyan}Selecciona una opción: ${colores.reset}`, (opcion) => {
+    switch (opcion.trim()) {
+      case '1':
+        console.clear();
+        leerTodosProductos();
+        pausa();
+        break;
+      case '2':
+        rl.question(`${colores.cyan}Ingresa el ID del producto: ${colores.reset}`, (id) => {
+          console.clear();
+          leerProductoPorId(parseInt(id));
+          pausa();
+        });
+        break;
+      case '3':
+        rl.question(`${colores.cyan}Nombre del producto: ${colores.reset}`, (nombre) => {
+          rl.question(`${colores.cyan}Descripción: ${colores.reset}`, (descripcion) => {
+            rl.question(`${colores.cyan}Precio: ${colores.reset}`, (precio) => {
+              rl.question(`${colores.cyan}Stock: ${colores.reset}`, (stock) => {
+                console.clear();
+                crearProducto(nombre, descripcion, parseFloat(precio), parseInt(stock));
+                pausa();
+              });
+            });
+          });
+        });
+        break;
+      case '4':
+        rl.question(`${colores.cyan}ID del producto a actualizar: ${colores.reset}`, (id) => {
+          const producto = catalogoProductos.productos.find(p => p.id === parseInt(id));
+          if (!producto) {
+            console.clear();
+            console.log(`${colores.red}✗ Producto no encontrado${colores.reset}\n`);
+            pausa();
+            return;
+          }
+          console.log(`${colores.dim}(Deja en blanco para no modificar el valor actual)${colores.reset}`);
+          rl.question(`${colores.cyan}Nuevo nombre [${producto.nombre}]: ${colores.reset}`, (nombre) => {
+            rl.question(`${colores.cyan}Nueva descripción [${producto.descripcion}]: ${colores.reset}`, (descripcion) => {
+              rl.question(`${colores.cyan}Nuevo precio [${producto.precio}]: ${colores.reset}`, (precio) => {
+                rl.question(`${colores.cyan}Nuevo stock [${producto.stock}]: ${colores.reset}`, (stock) => {
+                  console.clear();
+                  const actualizaciones = {};
+                  if (nombre.trim() !== '') actualizaciones.nombre = nombre;
+                  if (descripcion.trim() !== '') actualizaciones.descripcion = descripcion;
+                  if (precio.trim() !== '') actualizaciones.precio = parseFloat(precio);
+                  if (stock.trim() !== '') actualizaciones.stock = parseInt(stock);
+                  
+                  if (Object.keys(actualizaciones).length > 0) {
+                    actualizarProducto(parseInt(id), actualizaciones);
+                  } else {
+                    console.log(`${colores.yellow}No se realizaron cambios.${colores.reset}\n`);
+                  }
+                  pausa();
+                });
+              });
+            });
+          });
+        });
+        break;
+      case '5':
+        rl.question(`${colores.cyan}ID del producto a eliminar: ${colores.reset}`, (id) => {
+          console.clear();
+          eliminarProducto(parseInt(id));
+          pausa();
+        });
+        break;
+      case '6':
+        console.clear();
+        mostrarResumen();
+        pausa();
+        break;
+      case '7':
+        rl.question(`${colores.cyan}Stock mínimo a evaluar [20]: ${colores.reset}`, (minimo) => {
+          console.clear();
+          const limite = minimo.trim() !== '' ? parseInt(minimo) : 20;
+          productosConStockBajo(limite);
+          pausa();
+        });
+        break;
+      case '0':
+        console.clear();
+        console.log(`\n${colores.green}✓ Saliendo del sistema de gestión...${colores.reset}\n`);
+        rl.close();
+        break;
+      default:
+        console.log(`${colores.red}✗ Opción no válida${colores.reset}\n`);
+        pausa();
+    }
+  });
+}
 
-console.log(`${colores.dim}${colores.blue}${'─'.repeat(65)}${colores.reset}\n`);
-
-// Leer un producto específico
-leerProductoPorId(5);
-
-// ─────────────────────────────────────────────────────────────────
-// 2. CREATE - CREAR NUEVOS PRODUCTOS
-// ─────────────────────────────────────────────────────────────────
-
-crearProducto("Té Chai Latte", "Té chai especiado con leche vaporizada", 4.75, 30);
-crearProducto("Sándwich de Jamón", "Sándwich fresco con jamón y queso", 6.99, 25);
-
-// ─────────────────────────────────────────────────────────────────
-// 3. UPDATE - ACTUALIZAR PRODUCTOS
-// ─────────────────────────────────────────────────────────────────
-
-actualizarProducto(3, { 
-  precio: 4.25,
-  stock: 55
-});
-
-actualizarProducto(1, { 
-  nombre: "Frappé de Chocolate Premium",
-  descripcion: "Frappé de chocolate con leche de almendra y hielo",
-  precio: 6.49
-});
-
-// ─────────────────────────────────────────────────────────────────
-// 4. DELETE - ELIMINAR PRODUCTOS
-// ─────────────────────────────────────────────────────────────────
-
-// Supongamos que queremos eliminar un producto con bajo rendimiento
-// (eliminaremos el ID 7 como ejemplo)
-eliminarProducto(7);
-
-// ─────────────────────────────────────────────────────────────────
-// MOSTRAR ESTADO FINAL
-// ─────────────────────────────────────────────────────────────────
-
-console.log(`${colores.blue}${'═'.repeat(65)}${colores.reset}\n`);
-
-leerTodosProductos();
-
-mostrarResumen();
-
-productosConStockBajo(30);
-
-console.log(`${colores.blue}${'═'.repeat(65)}${colores.reset}\n`);
-
-console.log(`${colores.green}${colores.bright}✓ Demostración de CRUD completada${colores.reset}\n`);
-console.log(`${colores.bright}Funciones disponibles:${colores.reset}\n`);
-
-console.log(`${colores.cyan}leerTodosProductos()${colores.reset} - Muestra todos los productos`);
-console.log(`${colores.cyan}leerProductoPorId(id)${colores.reset} - Muestra un producto específico\n`);
-
-console.log(`${colores.cyan}crearProducto(nombre, descripcion, precio, stock)${colores.reset}`);
-console.log(`  └─ Crea un nuevo producto\n`);
-
-console.log(`${colores.cyan}actualizarProducto(id, {nombre, descripcion, precio, stock})${colores.reset}`);
-console.log(`  └─ Actualiza los datos de un producto\n`);
-
-console.log(`${colores.cyan}eliminarProducto(id)${colores.reset} - Elimina un producto\n`);
-
-console.log(`${colores.cyan}mostrarResumen()${colores.reset} - Muestra estadísticas del catálogo`);
-console.log(`${colores.cyan}productosConStockBajo(minimo)${colores.reset} - Muestra productos con bajo stock`);
-console.log(`${colores.cyan}contarProductos()${colores.reset} - Retorna la cantidad total de productos`);
-console.log(`${colores.cyan}calcularValorTotalInventario()${colores.reset} - Calcula el valor del inventario\n`);
+// Iniciar el menú interactivo
+setTimeout(() => {
+  mostrarMenuCRUD();
+}, 500);
 
 // Exportar para usar como módulo (opcional)
 if (typeof module !== 'undefined' && module.exports) {
