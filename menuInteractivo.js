@@ -1,10 +1,5 @@
-// ═══════════════════════════════════════════════════════════════
-//    MENÚ INTERACTIVO CON ENTRADA DEL USUARIO - CAFETERÍA
-// ═══════════════════════════════════════════════════════════════
-
 const readline = require('readline');
 
-// COLORES ANSI
 const colores = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -19,29 +14,15 @@ const colores = {
   bgGreen: '\x1b[42m'
 };
 
-// CATÁLOGO
-const catalogoProductos = {
-  productos: [
-    { id: 1, nombre: "Frappé de Chocolate", descripcion: "Delicioso frappé de chocolate con leche condensada y hielo", precio: 5.99, stock: 45 },
-    { id: 2, nombre: "Malteada de Fresa", descripcion: "Malteada fresca de fresa con crema batida y cerezas", precio: 6.50, stock: 35 },
-    { id: 3, nombre: "Café Espresso", descripcion: "Café espresso puro 100% arábica de alta calidad", precio: 3.75, stock: 60 },
-    { id: 4, nombre: "Cappuccino Artesanal", descripcion: "Cappuccino con espuma de leche vaporizada y canela", precio: 4.99, stock: 40 },
-    { id: 5, nombre: "Brownie de Chocolate", descripcion: "Brownie casero de chocolate oscuro con nueces", precio: 4.50, stock: 28 },
-    { id: 6, nombre: "Cheesecake de Arándanos", descripcion: "Cheesecake cremoso con cobertura de arándanos frescos", precio: 5.75, stock: 18 },
-    { id: 7, nombre: "Croissant de Almendra", descripcion: "Croissant crujiente relleno de crema de almendra", precio: 3.99, stock: 50 },
-    { id: 8, nombre: "Frappé de Vainilla", descripcion: "Frappé cremoso de vainilla con topping de chocolate", precio: 5.50, stock: 40 }
-  ]
-};
+const { catalogoProductos } = require('./catalogo.js');
 
 let carrito = [];
 
-// INTERFAZ READLINE
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
-// FUNCIONES AUXILIARES
 function limpiar() {
   console.clear();
 }
@@ -54,14 +35,81 @@ function separador() {
   console.log(`${colores.dim}${'═'.repeat(65)}${colores.reset}\n`);
 }
 
+function obtenerProductosConPromocion() {
+  return catalogoProductos.productos.map(producto => {
+    let descuento = 0;
+    let promoTexto = "";
+    
+    if (producto.id === 3) {
+      descuento = 0.20;
+      promoTexto = "Promo Especial: 20% OFF";
+    } else if (producto.precio > 5.00) {
+      descuento = 0.15;
+      promoTexto = "Oferta: 15% OFF";
+    }
+    
+    const precioDescuento = producto.precio * (1 - descuento);
+    
+    return {
+      ...producto,
+      descuento: descuento,
+      promoTexto: promoTexto,
+      precioFinal: parseFloat(precioDescuento.toFixed(2))
+    };
+  });
+}
+
 function mostrarCatalogo() {
   limpiar();
-  titulo("CATÁLOGO DE PRODUCTOS");
+  titulo("CATÁLOGO DE PRODUCTOS (COMPLETO)");
   
-  catalogoProductos.productos.forEach(p => {
+  const productosConPromo = obtenerProductosConPromocion();
+  
+  productosConPromo.forEach(p => {
+    const promoBadge = p.descuento > 0 ? ` ${colores.bgGreen}${colores.bright} ${p.promoTexto} ${colores.reset}` : "";
+    const precioTexto = p.descuento > 0 
+      ? `${colores.red}$${p.precio.toFixed(2)}${colores.reset} → ${colores.green}$${p.precioFinal.toFixed(2)}${colores.reset}`
+      : `${colores.green}$${p.precio.toFixed(2)}${colores.reset}`;
+      
+    console.log(`  ${colores.yellow}[${p.id}]${colores.reset} ${colores.bright}${p.nombre}${colores.reset}${promoBadge}`);
+    console.log(`      ${p.descripcion}`);
+    console.log(`      ${precioTexto} | ${colores.dim}Stock: ${p.stock}${colores.reset}\n`);
+  });
+}
+
+function mostrarProductosDisponibles() {
+  limpiar();
+  titulo("PRODUCTOS DISPONIBLES (CON STOCK)");
+  
+  const disponibles = catalogoProductos.productos.filter(p => p.stock > 0);
+  
+  if (disponibles.length === 0) {
+    console.log(`${colores.red}✗ No hay productos con stock disponible en este momento.${colores.reset}\n`);
+    return;
+  }
+  
+  disponibles.forEach(p => {
     console.log(`  ${colores.yellow}[${p.id}]${colores.reset} ${colores.bright}${p.nombre}${colores.reset}`);
     console.log(`      ${p.descripcion}`);
-    console.log(`      ${colores.green}$${p.precio}${colores.reset} | ${colores.dim}Stock: ${p.stock}${colores.reset}\n`);
+    console.log(`      ${colores.green}$${p.precio.toFixed(2)}${colores.reset} | ${colores.cyan}Stock disponible: ${p.stock}${colores.reset}\n`);
+  });
+}
+
+function mostrarPromociones() {
+  limpiar();
+  titulo("PROMOCIONES ESPECIALES");
+  
+  const productosConPromo = obtenerProductosConPromocion().filter(p => p.descuento > 0);
+  
+  if (productosConPromo.length === 0) {
+    console.log(`${colores.dim}No hay promociones activas en este momento.${colores.reset}\n`);
+    return;
+  }
+  
+  productosConPromo.forEach(p => {
+    console.log(`  ${colores.yellow}[${p.id}]${colores.reset} ${colores.bright}${p.nombre}${colores.reset} ${colores.bgGreen}${colores.bright} ${p.promoTexto} ${colores.reset}`);
+    console.log(`      ${p.descripcion}`);
+    console.log(`      Precio Regular: ${colores.red}$${p.precio.toFixed(2)}${colores.reset} → ${colores.green}Precio Especial: $${p.precioFinal.toFixed(2)}${colores.reset} | ${colores.dim}Stock: ${p.stock}${colores.reset}\n`);
   });
 }
 
@@ -85,13 +133,15 @@ ${colores.reset}`);
   }
   
   console.log(`${colores.bright}Selecciona una opción:${colores.reset}\n`);
-  console.log(`  ${colores.cyan}1${colores.reset} - Ver catálogo`);
-  console.log(`  ${colores.cyan}2${colores.reset} - Buscar producto`);
-  console.log(`  ${colores.cyan}3${colores.reset} - Agregar al carrito`);
-  console.log(`  ${colores.cyan}4${colores.reset} - Ver carrito`);
-  console.log(`  ${colores.cyan}5${colores.reset} - Eliminar del carrito`);
-  console.log(`  ${colores.cyan}6${colores.reset} - Procesar compra`);
-  console.log(`  ${colores.cyan}7${colores.reset} - Vaciar carrito`);
+  console.log(`  ${colores.cyan}1${colores.reset} - Ver catálogo completo`);
+  console.log(`  ${colores.cyan}2${colores.reset} - Ver productos disponibles (con stock)`);
+  console.log(`  ${colores.cyan}3${colores.reset} - Ver promociones especiales`);
+  console.log(`  ${colores.cyan}4${colores.reset} - Buscar producto`);
+  console.log(`  ${colores.cyan}5${colores.reset} - Agregar al carrito`);
+  console.log(`  ${colores.cyan}6${colores.reset} - Ver carrito`);
+  console.log(`  ${colores.cyan}7${colores.reset} - Eliminar del carrito`);
+  console.log(`  ${colores.cyan}8${colores.reset} - Procesar compra`);
+  console.log(`  ${colores.cyan}9${colores.reset} - Vaciar carrito`);
   console.log(`  ${colores.cyan}0${colores.reset} - Salir\n`);
 }
 
@@ -110,7 +160,11 @@ function mostrarCarrito() {
     total += subtotal;
     
     console.log(`${index + 1}. ${colores.bright}${item.nombre}${colores.reset}`);
-    console.log(`   Cantidad: ${colores.yellow}${item.cantidad}${colores.reset} x ${colores.green}$${item.precio}${colores.reset} = ${colores.green}$${subtotal.toFixed(2)}${colores.reset}\n`);
+    if (item.precioOriginal && item.precioOriginal !== item.precio) {
+      console.log(`   Cantidad: ${colores.yellow}${item.cantidad}${colores.reset} x ${colores.green}$${item.precio}${colores.reset} (${colores.red}Regular: $${item.precioOriginal.toFixed(2)}${colores.reset} - ${colores.bgGreen}${colores.bright} ${item.promoTexto} ${colores.reset}) = ${colores.green}$${subtotal.toFixed(2)}${colores.reset}\n`);
+    } else {
+      console.log(`   Cantidad: ${colores.yellow}${item.cantidad}${colores.reset} x ${colores.green}$${item.precio}${colores.reset} = ${colores.green}$${subtotal.toFixed(2)}${colores.reset}\n`);
+    }
   });
   
   separador();
@@ -118,7 +172,8 @@ function mostrarCarrito() {
 }
 
 function buscarProducto(termino) {
-  const resultado = catalogoProductos.productos.filter(p =>
+  const productosPromo = obtenerProductosConPromocion();
+  const resultado = productosPromo.filter(p =>
     p.nombre.toLowerCase().includes(termino.toLowerCase()) || String(p.id) === termino
   );
   
@@ -132,9 +187,14 @@ function buscarProducto(termino) {
   titulo(`RESULTADOS DE BÚSQUEDA: "${termino}"`);
   
   resultado.forEach(p => {
-    console.log(`  ${colores.yellow}[${p.id}]${colores.reset} ${colores.bright}${p.nombre}${colores.reset}`);
+    const promoBadge = p.descuento > 0 ? ` ${colores.bgGreen}${colores.bright} ${p.promoTexto} ${colores.reset}` : "";
+    const precioTexto = p.descuento > 0 
+      ? `${colores.red}$${p.precio.toFixed(2)}${colores.reset} → ${colores.green}$${p.precioFinal.toFixed(2)}${colores.reset}`
+      : `${colores.green}$${p.precio.toFixed(2)}${colores.reset}`;
+      
+    console.log(`  ${colores.yellow}[${p.id}]${colores.reset} ${colores.bright}${p.nombre}${colores.reset}${promoBadge}`);
     console.log(`      ${p.descripcion}`);
-    console.log(`      ${colores.green}$${p.precio}${colores.reset} | ${colores.dim}Stock: ${p.stock}${colores.reset}\n`);
+    console.log(`      ${precioTexto} | ${colores.dim}Stock: ${p.stock}${colores.reset}\n`);
   });
 }
 
@@ -146,17 +206,35 @@ function agregarAlCarrito(idProducto, cantidad) {
     return false;
   }
   
+  if (producto.stock <= 0) {
+    console.log(`${colores.red}✗ Producto agotado.${colores.reset}\n`);
+    return false;
+  }
+  
   if (cantidad > producto.stock) {
     console.log(`${colores.red}✗ Stock insuficiente. Disponibles: ${producto.stock}${colores.reset}\n`);
     return false;
   }
   
   const itemEnCarrito = carrito.find(item => item.id === producto.id);
+  const productosPromo = obtenerProductosConPromocion();
+  const productoPromo = productosPromo.find(p => p.id === producto.id);
+  const precioAUsar = productoPromo ? productoPromo.precioFinal : producto.precio;
   
   if (itemEnCarrito) {
+    if (itemEnCarrito.cantidad + cantidad > producto.stock) {
+      console.log(`${colores.red}✗ No puedes agregar más de este producto. Stock total: ${producto.stock} (Ya tienes ${itemEnCarrito.cantidad} en el carrito)${colores.reset}\n`);
+      return false;
+    }
     itemEnCarrito.cantidad += cantidad;
   } else {
-    carrito.push({ ...producto, cantidad });
+    carrito.push({ 
+      ...producto, 
+      precio: precioAUsar, 
+      precioOriginal: producto.precio,
+      promoTexto: productoPromo ? productoPromo.promoTexto : "",
+      cantidad 
+    });
   }
   
   console.log(`${colores.green}✓ ${producto.nombre} agregado al carrito${colores.reset}\n`);
@@ -176,6 +254,12 @@ function procesarCompra() {
   carrito.forEach((item, index) => {
     const subtotal = item.precio * item.cantidad;
     total += subtotal;
+    
+    const productoOriginal = catalogoProductos.productos.find(p => p.id === item.id);
+    if (productoOriginal) {
+      productoOriginal.stock -= item.cantidad;
+    }
+    
     console.log(`${index + 1}. ${item.nombre} x${item.cantidad} = ${colores.green}$${subtotal.toFixed(2)}${colores.reset}`);
   });
   
@@ -187,8 +271,8 @@ function procesarCompra() {
 }
 
 function eliminarDelCarrito(indice) {
-  if (indice < 1 || indice > carrito.length) {
-    console.log(`${colores.red}✗ Índice inválido${colores.reset}\n`);
+  if (isNaN(indice) || indice < 1 || indice > carrito.length) {
+    console.log(`${colores.red}✗ Por favor, ingresa un número válido del carrito.${colores.reset}\n`);
     return;
   }
   
@@ -206,7 +290,6 @@ function vaciarCarrito() {
   console.log(`${colores.green}✓ Carrito vaciado${colores.reset}\n`);
 }
 
-// MENÚ PRINCIPAL INTERACTIVO
 function menuPrincipal() {
   mostrarMenuPrincipal();
   
@@ -220,13 +303,23 @@ function menuPrincipal() {
         break;
         
       case '2':
+        mostrarProductosDisponibles();
+        rl.question(`\n${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => menuPrincipal());
+        break;
+        
+      case '3':
+        mostrarPromociones();
+        rl.question(`\n${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => menuPrincipal());
+        break;
+        
+      case '4':
         rl.question(`${colores.cyan}Buscar por nombre o ID: ${colores.reset}`, (termino) => {
           buscarProducto(termino);
           rl.question(`${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => menuPrincipal());
         });
         break;
         
-      case '3':
+      case '5':
         rl.question(`${colores.cyan}ID del producto: ${colores.reset}`, (id) => {
           rl.question(`${colores.cyan}Cantidad: ${colores.reset}`, (cantidad) => {
             agregarAlCarrito(id, parseInt(cantidad) || 1);
@@ -235,25 +328,29 @@ function menuPrincipal() {
         });
         break;
         
-      case '4':
-        mostrarCarrito();
-        rl.question(`${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => menuPrincipal());
-        break;
-        
-      case '5':
-        mostrarCarrito();
-        rl.question(`${colores.cyan}Número del item a eliminar: ${colores.reset}`, (indice) => {
-          eliminarDelCarrito(parseInt(indice));
-          rl.question(`${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => menuPrincipal());
-        });
-        break;
-        
       case '6':
-        procesarCompra();
+        mostrarCarrito();
         rl.question(`${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => menuPrincipal());
         break;
         
       case '7':
+        mostrarCarrito();
+        if (carrito.length > 0) {
+          rl.question(`${colores.cyan}Número del item a eliminar: ${colores.reset}`, (indice) => {
+            eliminarDelCarrito(parseInt(indice));
+            rl.question(`${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => menuPrincipal());
+          });
+        } else {
+          rl.question(`${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => menuPrincipal());
+        }
+        break;
+        
+      case '8':
+        procesarCompra();
+        rl.question(`${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => menuPrincipal());
+        break;
+        
+      case '9':
         vaciarCarrito();
         rl.question(`${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => menuPrincipal());
         break;
@@ -272,7 +369,6 @@ function menuPrincipal() {
   });
 }
 
-// INICIAR
 limpiar();
 console.log(`${colores.bright}${colores.green}
 ╔══════════════════════════════════════════════════════════╗
