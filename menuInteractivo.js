@@ -14,7 +14,7 @@ const colores = {
   bgGreen: '\x1b[42m'
 };
 
-const { catalogoProductos } = require('./catalogo.js');
+const { catalogoProductos, prepararPedido } = require('./catalogo.js');
 
 let carrito = [];
 
@@ -237,27 +237,35 @@ function agregarAlCarrito(idProducto, cantidad) {
     });
   }
   
-  console.log(`${colores.green}✓ ${producto.nombre} agregado al carrito${colores.reset}\n`);
-  return true;
-}
-
-async function simularEstadosPedido() {
-  const estados = [
-    { mensaje: "Pedido recibido", color: colores.blue },
-    { mensaje: "Preparando.....", color: colores.yellow },
-    { mensaje: "Empacando.....", color: colores.magenta },
-    { mensaje: "Pedido entregado", color: colores.green }
-  ];
-
-  for (const estado of estados) {
-    limpiar();
-    titulo("ESTADO DEL PEDIDO");
-    console.log(`\n  ${estado.color}${colores.bright}>> ${estado.mensaje}${colores.reset}\n`);
-    
-    // Simulamos un tiempo de espera para cada estado
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  function separador() {
+    console.log(`${colores.dim}${'═'.repeat(65)}${colores.reset}\n`);
   }
-}
+
+  function barraProgreso(porcentaje) {
+    const ancho = 40;
+    const completado = Math.round((ancho * porcentaje) / 100);
+    const faltante = ancho - completado;
+    return `${colores.green}${'█'.repeat(completado)}${colores.dim}${'.'.repeat(faltante)}${colores.reset} ${porcentaje}%`;
+  }
+
+  async function simularEstadosPedido() {
+    const estados = [
+      { mensaje: "Pedido recibido", color: colores.blue, progreso: 10 },
+      { mensaje: "Preparando.....", color: colores.yellow, progreso: 40 },
+      { mensaje: "Empacando.....", color: colores.magenta, progreso: 75 },
+      { mensaje: "Pedido entregado", color: colores.green, progreso: 100 }
+    ];
+
+    for (const estado of estados) {
+      limpiar();
+      titulo("ESTADO DEL PEDIDO");
+      console.log(`\n  ${estado.color}${colores.bright}>> ${estado.mensaje}${colores.reset}`);
+      console.log(`  ${barraProgreso(estado.progreso)}\n`);
+
+      // Simulamos un tiempo de espera para cada estado
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+  }
 
 async function procesarCompra() {
   if (carrito.length === 0) {
@@ -272,12 +280,6 @@ async function procesarCompra() {
   carrito.forEach((item, index) => {
     const subtotal = item.precio * item.cantidad;
     total += subtotal;
-    
-    const productoOriginal = catalogoProductos.productos.find(p => p.id === item.id);
-    if (productoOriginal) {
-      productoOriginal.stock -= item.cantidad;
-    }
-    
     console.log(`${index + 1}. ${item.nombre} x${item.cantidad} = ${colores.green}$${subtotal.toFixed(2)}${colores.reset}`);
   });
   
@@ -286,16 +288,39 @@ async function procesarCompra() {
   
   rl.question(`${colores.yellow}¿Deseas confirmar tu compra? (s/n): ${colores.reset}`, async (respuesta) => {
     if (respuesta.toLowerCase() === 's') {
-      await simularEstadosPedido();
-      
-      limpiar();
-      titulo("PEDIDO FINALIZADO");
-      console.log(`${colores.bright}${colores.bgGreen}${colores.cyan} ✓ ¡COMPRA REALIZADA EXITOSAMENTE! ${colores.reset}\n`);
-      console.log(`${colores.dim}Tu pedido ha sido procesado y entregado.${colores.reset}\n`);
-      
-      carrito = [];
+      try {
+        console.log(`\n${colores.cyan}Enviando pedido a cocina...${colores.reset}`);
+        
+        // Simulación de validación interna de cocina para cada producto
+        for (const item of carrito) {
+          await prepararPedido(item); // Esto puede fallar (10% cocina, 10% ingredientes)
+        }
+
+        await simularEstadosPedido();
+        
+        // Descontar stock solo si la preparación fue exitosa
+        carrito.forEach(item => {
+          const productoOriginal = catalogoProductos.productos.find(p => p.id === item.id);
+          if (productoOriginal) {
+            productoOriginal.stock -= item.cantidad;
+          }
+        });
+
+        limpiar();
+        titulo("PEDIDO FINALIZADO");
+        console.log(`${colores.bright}${colores.bgGreen}${colores.cyan} ✓ ¡COMPRA REALIZADA EXITOSAMENTE! ${colores.reset}\n`);
+        console.log(`${colores.dim}Tu pedido ha sido procesado y entregado.${colores.reset}\n`);
+        
+        carrito = [];
+      } catch (error) {
+        limpiar();
+        titulo("ERROR EN EL PEDIDO");
+        console.log(`${colores.bgRed}${colores.bright} LO SENTIMOS: ${colores.reset}`);
+        console.log(`\n  ${colores.red}${error.mensaje}${colores.reset}\n`);
+        console.log(`${colores.yellow}El pedido ha sido cancelado automáticamente.${colores.reset}\n`);
+      }
     } else {
-      console.log(`${colores.red}\n✗ Pedido cancelado.${colores.reset}\n`);
+      console.log(`${colores.red}\n✗ Pedido cancelado por el usuario.${colores.reset}\n`);
     }
     rl.question(`${colores.dim}Presiona Enter para volver al menú...${colores.reset}`, () => menuPrincipal());
   });
