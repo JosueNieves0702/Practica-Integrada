@@ -241,7 +241,25 @@ function agregarAlCarrito(idProducto, cantidad) {
   return true;
 }
 
-function procesarCompra() {
+async function simularEstadosPedido() {
+  const estados = [
+    { mensaje: "Pedido recibido", color: colores.blue },
+    { mensaje: "Preparando.....", color: colores.yellow },
+    { mensaje: "Empacando.....", color: colores.magenta },
+    { mensaje: "Pedido entregado", color: colores.green }
+  ];
+
+  for (const estado of estados) {
+    limpiar();
+    titulo("ESTADO DEL PEDIDO");
+    console.log(`\n  ${estado.color}${colores.bright}>> ${estado.mensaje}${colores.reset}\n`);
+    
+    // Simulamos un tiempo de espera para cada estado
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+}
+
+async function procesarCompra() {
   if (carrito.length === 0) {
     console.log(`${colores.red}✗ El carrito está vacío${colores.reset}\n`);
     return;
@@ -265,9 +283,22 @@ function procesarCompra() {
   
   separador();
   console.log(`${colores.bright}${colores.green}TOTAL A PAGAR: $${total.toFixed(2)}${colores.reset}\n`);
-  console.log(`${colores.bright}${colores.bgGreen}${colores.cyan} ✓ ¡COMPRA REALIZADA EXITOSAMENTE! ${colores.reset}\n`);
   
-  carrito = [];
+  rl.question(`${colores.yellow}¿Deseas confirmar tu compra? (s/n): ${colores.reset}`, async (respuesta) => {
+    if (respuesta.toLowerCase() === 's') {
+      await simularEstadosPedido();
+      
+      limpiar();
+      titulo("PEDIDO FINALIZADO");
+      console.log(`${colores.bright}${colores.bgGreen}${colores.cyan} ✓ ¡COMPRA REALIZADA EXITOSAMENTE! ${colores.reset}\n`);
+      console.log(`${colores.dim}Tu pedido ha sido procesado y entregado.${colores.reset}\n`);
+      
+      carrito = [];
+    } else {
+      console.log(`${colores.red}\n✗ Pedido cancelado.${colores.reset}\n`);
+    }
+    rl.question(`${colores.dim}Presiona Enter para volver al menú...${colores.reset}`, () => menuPrincipal());
+  });
 }
 
 function eliminarDelCarrito(indice) {
@@ -347,7 +378,6 @@ function menuPrincipal() {
         
       case '8':
         procesarCompra();
-        rl.question(`${colores.dim}Presiona Enter para continuar...${colores.reset}`, () => menuPrincipal());
         break;
         
       case '9':
