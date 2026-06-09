@@ -8,17 +8,19 @@ import Perfil from './components/Perfil';
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>hola mundo react native</Text>
-      <Text>--------------------------------</Text>
-      <Saludo></Saludo>
-      <Saludo />
-      <Text>----------------------------------------</Text>
-      <Saludo2></Saludo2>
       <Image source={require('./assets/wave.png')} />
+      <Text>hola mundo react native</Text>
+      <Text>----------------------------------------</Text>
       <StatusBar style="auto" />
-      <Perfil></Perfil>
+      <Perfil nombre="Joaquin Josue Moreno Nieves" carrera="Ingeniería en Sistemas Computacionales" materia=" Móvil" cuatri="9" />
+      <Perfil 
+      nombre="Jose Luis Moreno" 
+      carrera="Mecanica " 
+      materia=" holap" 
+      cuatri="9" />
+
     </View>
-  );
+  );k
 }
 /* estilos y posisionamiento*/
 const styles = StyleSheet.create({
