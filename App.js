@@ -8,19 +8,13 @@ import Perfil from './components/Perfil';
 export default function App() {
   return (
     <View style={styles.container}>
-      <Image source={require('./assets/wave.png')} />
-      <Text>hola mundo react native</Text>
-      <Text>----------------------------------------</Text>
       <StatusBar style="auto" />
-      <Perfil nombre="Joaquin Josue Moreno Nieves" carrera="Ingeniería en Sistemas Computacionales" materia=" Móvil" cuatri="9" />
-      <Perfil 
-      nombre="Jose Luis Moreno" 
-      carrera="Mecanica " 
-      materia=" holap" 
-      cuatri="9" />
+      <Perfil style={styles.targetaVerde} nombre="Joaquin Josue Moreno" carrera="ISC" materia=" Móvil" cuatri="9" />
+      <Perfil style={styles.targetaRoja} nombre="Jose Luis Moreno" carrera="Mecanica " materia=" holap" cuatri="9" />
+      <Perfil style={styles.targetaVerde} nombre="Julian Perez" carrera="ISC" materia=" Móvil" cuatri="9" />
 
     </View>
-  );k
+  );
 }
 /* estilos y posisionamiento*/
 const styles = StyleSheet.create({
@@ -28,6 +22,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
+    flexDirection: 'row',
+  },
+
+  targetaVerde:{
+    backgroundColor: '#357435',
+  },
+  targetaRoja:{
+    backgroundColor: '#710909',
   },
 });
