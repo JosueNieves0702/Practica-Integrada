@@ -1,16 +1,14 @@
 /*zona de importaciones*/
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Image } from 'react-native';
-import { Saludo } from './components/Saludo';
-import {Saludo2} from './components/Saludo2';
-import Perfil from './components/Perfil';
-import MenuScreen from './screens/MenuScreen';
+import { SafeAreaView } from 'react-native-save-area-context';
 /*zona main*/
-export default function App() {
+export default function SaveAreaScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-     <MenuScreen></MenuScreen>
+      
+     
     </View>
   );
 }
@@ -23,5 +21,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     flexDirection: 'row',
   },
+
 
 });
