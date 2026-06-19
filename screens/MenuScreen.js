@@ -1,10 +1,9 @@
 /*zona de importaciones*/
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image } from 'react-native';
+import { StyleSheet, Text, View, Image, Button } from 'react-native';
 import React,{useState} from 'react'
 import TargetasScreen from './TargetasScreen';
 import SaveAreaScreen from './SafeAreaScreen';
-import { Button } from 'react-native-web';
 
 /*zona main*/
 export default function MenuScreen() {
@@ -38,8 +37,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'space-evenly',
-    flexDirection: 'row',
+    justifyContent: 'space-around',
+    flexDirection: 'column',
+    gap: 20,
   },
 
 

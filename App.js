@@ -1,27 +1,25 @@
-/*zona de importaciones*/
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image } from 'react-native';
-import { Saludo } from './components/Saludo';
-import {Saludo2} from './components/Saludo2';
-import Perfil from './components/Perfil';
+import { StyleSheet, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MenuScreen from './screens/MenuScreen';
-/*zona main*/
+
 export default function App() {
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
-     <MenuScreen></MenuScreen>
-    </View>
+    <SafeAreaProvider>
+      <View style={styles.container}>
+        <MenuScreen />
+        <StatusBar style="auto" />
+      </View>
+    </SafeAreaProvider>
   );
 }
-/* estilos y posisionamiento*/
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgb(255, 255, 255)',
     alignItems: 'center',
     justifyContent: 'space-evenly',
     flexDirection: 'row',
-  },
-
+  }
 });
