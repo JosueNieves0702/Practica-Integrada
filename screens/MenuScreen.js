@@ -5,6 +5,7 @@ import React,{useState} from 'react'
 import TargetasScreen from './TargetasScreen';
 import SaveAreaScreen from './SafeAreaScreen';
 import Pre_sable_and_switch from './Pre_sable_and_switch';
+import TextInputAlertScreen from './Text_imput_and_alert';
 
 /*zona main*/
 export default function MenuScreen() {
@@ -17,6 +18,8 @@ export default function MenuScreen() {
       return <SaveAreaScreen/>;
     case 'presable':
       return <Pre_sable_and_switch/>;
+    case 'textinput':
+      return <TextInputAlertScreen/>;
     case 'menu':
     default:
   
@@ -25,6 +28,7 @@ export default function MenuScreen() {
         <Button title='practica targetas' onPress={()=>setScreen('targetas')}/>
         <Button title='practica SaveArea' onPress={()=>setScreen('safearea')}/>
         <Button title='practica presable y switch' onPress={()=>setScreen('presable')}/>
+        <Button title='practica TextInput and Alert' onPress={()=>setScreen('textinput')}/>
         <StatusBar style="auto" />
      
     </View>
