@@ -21,10 +21,10 @@ export default function TextInputAlertScreen() {
 
   const mostrarAlerta = (titulo, mensaje, botones) => {
     if (Platform.OS === 'web'){
-      alert(`${titulo}\n\n${mensaje}`); // Corregido 'Alert' por 'alert' nativo de web y las comillas invertidas
+      alert(`${titulo}\n\n${mensaje}`);
       return;
     }
-    Alert.alert(titulo, mensaje, botones); // Corregido 'tirulo' por 'titulo'
+    Alert.alert(titulo, mensaje, botones); 
   }
 
   //Alert 1
@@ -142,7 +142,6 @@ export default function TextInputAlertScreen() {
       />
 
       <View style={styles.botonesContainer}>
-        {/* Corregido 'styles.botonWrapper' por punto '.' */}
         <View style={styles.botonWrapper}>
             <Button title='Guardar nombre' onPress={validarNombre}></Button>
         </View>
