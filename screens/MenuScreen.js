@@ -6,6 +6,7 @@ import TargetasScreen from './TargetasScreen';
 import SaveAreaScreen from './SafeAreaScreen';
 import Pre_sable_and_switch from './Pre_sable_and_switch';
 import TextInputAlertScreen from './Text_imput_and_alert';
+import FlatListScreen from './FlatListScreen';
 
 /*zona main*/
 export default function MenuScreen() {
@@ -20,6 +21,8 @@ export default function MenuScreen() {
       return <Pre_sable_and_switch/>;
     case 'textinput':
       return <TextInputAlertScreen/>;
+    case 'flatlist':
+      return <FlatListScreen/>;
     case 'menu':
     default:
   
@@ -29,6 +32,7 @@ export default function MenuScreen() {
         <Button title='practica SaveArea' onPress={()=>setScreen('safearea')}/>
         <Button title='practica presable y switch' onPress={()=>setScreen('presable')}/>
         <Button title='practica TextInput and Alert' onPress={()=>setScreen('textinput')}/>
+        <Button title='practica FlatList' onPress={()=>setScreen('flatlist')}/>
         <StatusBar style="auto" />
      
     </View>
